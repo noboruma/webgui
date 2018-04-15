@@ -1,0 +1,6 @@
+[submodule "deps/pistache"]
+	path = deps/pistache
+	url = https://github.com/oktal/pistache
+[submodule "deps/webview"]
+	path = deps/webview
+	url = https://github.com/zserge/webview
