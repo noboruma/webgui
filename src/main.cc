@@ -1,10 +1,12 @@
-#include <pistache/endpoint.h>
+//#include <pistache/endpoint.h>
 
 #include <thread>
 #include <mutex>
 #include <chrono>
 
-#include "html.h"
+const char * s=
+#include "index.html"
+;
 
 using namespace Pistache;
 

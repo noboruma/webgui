@@ -17,30 +17,32 @@ APPNAME=webgui
 # User defined
 #HEADERS=
 SRCS= $(ROOT_DIR)/src/main.cc
+RES= $(ROOT_DIR)/resources/html/index.html
 
 # Auto defined
 OBJS= $(notdir $(SRCS:.cc=.o))
+RAWS= $(notdir $(RES))
 #PCH=$(HEADERS).gch
 CXXFLAGS+=-I$(ROOT_DIR)/deps/pistache/include -I$(ROOT_DIR)/deps -I.
 LDFLAGS+=-lpistache -pthread -L$(ROOT_DIR)/deps/pistache/build/src
 
-CXXFLAGS+=-O3 -DNDEBUG
+CXXFLAGS+=-O3 -DNDEBUG -std=c++14
 
 all: app
 
 debug: CXXFLAGS+=-DDEBUG -g
 debug: app
 
-app: html.h $(OBJS) $(PCH)
+app: $(RAWS) $(OBJS) $(PCH)
 	$(CXX) $^ $(CXXFLAGS) $(LDFLAGS) -o $(APPNAME)
 
 #$(PCH): $(HEADERS)
     #$(CXX) $(CXX_CFLAGS) -x c++-header $(PCH)
 
-html.h: $(ROOT_DIR)/resources/html/index.html
-	xxd -i $< > html.h
-	sed -i 's/unsigned char.*$$/char ___html\[\]={/g' html.h
-	sed -i 's/unsigned int.*=/unsigned int ___html_len=/g' html.h
+$(RAWS): $(RES)
+	cat $< > $@
+	sed -i '1s/^/R"(=====/' $@
+	sed -i '$$s/$$/=====)"/' $@
 
 %.o: $(ROOT_DIR)/src/%.cc
 	$(CXX) -c $< -O3 $(CXXFLAGS) -o $@
