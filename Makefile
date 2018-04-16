@@ -1,5 +1,6 @@
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
+# OS specific
 ifeq ($(OS),Windows_NT)
 	CXXFLAGS+=-DWEBVIEW_WINAPI=1 -lole32 -lcomctl32 -loleaut32 -luuid -mwindows
 else
@@ -12,6 +13,7 @@ else
     endif
 endif
 
+# Generic Makefile
 APPNAME=webgui
 
 # User defined
@@ -19,13 +21,16 @@ APPNAME=webgui
 SRCS= $(ROOT_DIR)/src/main.cc
 RES= $(ROOT_DIR)/resources/html/index.html
 
-# Auto defined
+# Auto generated temporaries
 OBJS= $(notdir $(SRCS:.cc=.o))
 RAWS= $(notdir $(RES))
 #PCH=$(HEADERS).gch
-CXXFLAGS+=-I$(ROOT_DIR)/deps/pistache/include -I$(ROOT_DIR)/deps -I.
-LDFLAGS+=-lpistache -pthread -L$(ROOT_DIR)/deps/pistache/build/src
 
+## includes
+CXXFLAGS+=-I$(ROOT_DIR)/deps/pistache/include -I$(ROOT_DIR)/deps -I.
+## libraries
+LDFLAGS+=-lpistache -pthread -L$(ROOT_DIR)/deps/pistache/build/src
+# flags
 CXXFLAGS+=-O3 -DNDEBUG -std=c++14
 
 all: app
@@ -34,15 +39,15 @@ debug: CXXFLAGS+=-DDEBUG -g
 debug: app
 
 app: $(RAWS) $(OBJS) $(PCH)
-	$(CXX) $^ $(CXXFLAGS) $(LDFLAGS) -o $(APPNAME)
+	$(CXX) $(OBJS) $(CXXFLAGS) $(LDFLAGS) -o $(APPNAME)
 
 #$(PCH): $(HEADERS)
     #$(CXX) $(CXX_CFLAGS) -x c++-header $(PCH)
 
 $(RAWS): $(RES)
 	cat $< > $@
-	sed -i '1s/^/R"(=====/' $@
-	sed -i '$$s/$$/=====)"/' $@
+	sed -i '1s/^/R"external(/' $@
+	sed -i '$$s/$$/)external"/' $@
 
 %.o: $(ROOT_DIR)/src/%.cc
 	$(CXX) -c $< -O3 $(CXXFLAGS) -o $@
@@ -50,4 +55,4 @@ $(RAWS): $(RES)
 clean:
 	rm ./*.o
 	rm ./$(APPNAME)
-	rm ./html.h
+	rm ./$(RAWS)

@@ -1,27 +1,23 @@
-//#include <pistache/endpoint.h>
+#include <pistache/endpoint.h>
+#include <pistache/net.h>
 
 #include <thread>
-#include <mutex>
-#include <chrono>
 
-const char * s=
+char const * raw_index_html =
 #include "index.html"
 ;
 
-using namespace Pistache;
-
 namespace {
-    struct HelloHandler : public Http::Handler {
+    struct HelloHandler : public Pistache::Http::Handler
+    {
         HTTP_PROTOTYPE(HelloHandler)
 
-        void onRequest(const Http::Request& request, Http::ResponseWriter writer) {
+        void onRequest(const Pistache::Http::Request& request, Pistache::Http::ResponseWriter writer)
+        {
             if (request.resource() == "/resources/js/drawMainCanvas.js") {
-                Http::serveFile(writer, "../resources/js/drawMainCanvas.js");
+                Pistache::Http::serveFile(writer, "../resources/js/drawMainCanvas.js");
             } else {
-
-                std::string s(___html,
-                              ___html_len);
-                writer.send(Http::Code::Ok, s.c_str());
+                writer.send(Pistache::Http::Code::Ok, raw_index_html);
             }
         }
     };
@@ -29,25 +25,29 @@ namespace {
 
 #define WEBVIEW_IMPLEMENTATION
 #include <webview/webview.h>
-
 #ifdef WIN32
-int WINAPI WinMain(HINSTANCE hInt, HINSTANCE hPrevInst, LPSTR lpCmdLine,
-                   int nCmdShow) {
+int WINAPI WinMain(HINSTANCE hInt, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nCmdShow) {
 #else
 int main(int argc, char const **argv) {
 #endif
-    std::thread server([](){
-        Http::listenAndServe<HelloHandler>("*:9080");
-    });
-    std::thread client([](){
-        using namespace std::chrono_literals;
-        std::this_thread::sleep_for(2s);
-        webview("self-hosted Hello, world",
-                "http://localhost:9080", 800, 600, 1);
-    });
+    Pistache::Address addr(Pistache::Ipv4::any(), Pistache::Port(9080));
+
+    auto opts = Pistache::Http::Endpoint::options().threads(1);
+    Pistache::Http::Endpoint server(addr);
+    server.init(opts);
+    server.setHandler(std::make_shared<HelloHandler>());
+    server.serveThreaded();
+
+    std::thread client([addr=std::move(addr)]()
+                       {
+                           auto protocol = "http://";
+                           auto host = protocol+addr.host()+":";
+                           host+=std::to_string(static_cast<int16_t>(addr.port()));
+                           webview("self-hosted Hello, world",
+                                   host.c_str(), 800, 600, 1);
+                       });
 
     client.join();
-    server.join();
 
     return 0;
 }
