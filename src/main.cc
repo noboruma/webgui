@@ -4,10 +4,10 @@
 #include <thread>
 
 char const * raw_index_html =
-#include "resources/html/index.html"
+#include "static/resources/html/index.html"
 ;
 char const * raw_drawMainCanvas_js =
-#include "resources/js/drawMainCanvas.js"
+#include "static/resources/js/drawMainCanvas.js"
 ;
 
 namespace {

@@ -22,10 +22,9 @@ SRCS= $(ROOT_DIR)/src/main.cc
 RES= resources/html/index.html \
      resources/js/drawMainCanvas.js
 
-
 # Auto generated temporaries
 OBJS= $(notdir $(SRCS:.cc=.o))
-RAWS= $(RES)
+RAWS= $(addprefix static/, $(RES))
 #PCH=$(HEADERS).gch
 
 ## includes
@@ -47,7 +46,7 @@ app: $(RAWS) $(OBJS) $(PCH)
     #$(CXX) $(CXX_CFLAGS) -x c++-header $(PCH)
 
 
-$(RAWS): % : $(ROOT_DIR)/%
+$(RAWS): static/% : $(ROOT_DIR)/%
 	mkdir -p $(@D)
 	cp $< $@
 	sed -i '1s/^/R"external(/' $@
@@ -57,6 +56,7 @@ $(RAWS): % : $(ROOT_DIR)/%
 	$(CXX) -c $< -O3 $(CXXFLAGS) -o $@
 
 clean:
-	rm ./*.o
-	rm ./$(APPNAME)
-	rm ./$(RAWS)
+	-rm ./*.o 2>/dev/null
+	-rm ./$(APPNAME)
+	-rm ./$(RAWS)
+	rm -rd ./static
