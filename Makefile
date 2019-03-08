@@ -19,11 +19,13 @@ APPNAME=webgui
 # User defined
 #HEADERS=
 SRCS= $(ROOT_DIR)/src/main.cc
-RES= $(ROOT_DIR)/resources/html/index.html
+RES= resources/html/index.html \
+     resources/js/drawMainCanvas.js
+
 
 # Auto generated temporaries
 OBJS= $(notdir $(SRCS:.cc=.o))
-RAWS= $(notdir $(RES))
+RAWS= $(RES)
 #PCH=$(HEADERS).gch
 
 ## includes
@@ -44,8 +46,10 @@ app: $(RAWS) $(OBJS) $(PCH)
 #$(PCH): $(HEADERS)
     #$(CXX) $(CXX_CFLAGS) -x c++-header $(PCH)
 
-$(RAWS): $(RES)
-	cat $< > $@
+
+$(RAWS): % : $(ROOT_DIR)/%
+	mkdir -p $(@D)
+	cp $< $@
 	sed -i '1s/^/R"external(/' $@
 	sed -i '$$s/$$/)external"/' $@
 

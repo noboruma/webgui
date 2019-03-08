@@ -4,7 +4,10 @@
 #include <thread>
 
 char const * raw_index_html =
-#include "index.html"
+#include "resources/html/index.html"
+;
+char const * raw_drawMainCanvas_js =
+#include "resources/js/drawMainCanvas.js"
 ;
 
 namespace {
@@ -15,7 +18,8 @@ namespace {
         void onRequest(const Pistache::Http::Request& request, Pistache::Http::ResponseWriter writer)
         {
             if (request.resource() == "/resources/js/drawMainCanvas.js") {
-                Pistache::Http::serveFile(writer, "../resources/js/drawMainCanvas.js");
+                //Pistache::Http::serveFile(writer, "./resources/js/drawMainCanvas.js");
+                writer.send(Pistache::Http::Code::Ok, raw_drawMainCanvas_js);
             } else {
                 writer.send(Pistache::Http::Code::Ok, raw_index_html);
             }
